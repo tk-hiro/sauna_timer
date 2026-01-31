@@ -542,6 +542,26 @@
                 this.initAudioContext();
                 this.initAudioElement();
                 this.setupAudioUnlock();
+                this.initMediaSession();
+            }
+
+            initMediaSession() {
+                if (!('mediaSession' in navigator)) {
+                    console.log('MediaSession API is not supported');
+                    return;
+                }
+
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'サウナタイマー',
+                    artist: 'タイマーアラート',
+                    album: 'サウナタイマー'
+                });
+            }
+
+            setPlaybackState(state) {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = state;
+                }
             }
 
             async initAudioContext() {
@@ -660,12 +680,15 @@
 
                 this.audioElement.src = url;
                 this.audioElement.volume = 1.0;
+                this.setPlaybackState('playing');
                 this.audioElement.play().then(() => {
                     this.audioElement.onended = () => {
+                        this.setPlaybackState('none');
                         URL.revokeObjectURL(url);
                     };
                 }).catch(err => {
                     console.error('Audio playback failed:', err);
+                    this.setPlaybackState('none');
                     URL.revokeObjectURL(url);
                 });
             }
