@@ -450,9 +450,9 @@
                 this.stop();
                 audioManager.playFinishSound();
                 this.status.textContent = '🎉 時間終了！';
-                setTimeout(() => {
-                    alert(`タイマー${this.id} 時間終了！`);
-                }, 100);
+                // setTimeout(() => {
+                //     alert(`タイマー${this.id} 時間終了！`);
+                // }, 100);
             }
 
             updateButtons() {
@@ -592,7 +592,7 @@
                 frequencies.forEach((freq, index) => {
                     setTimeout(() => {
                         this.createBeep(freq, 0.6, 'square', 1.0);
-                    }, index * 200);
+                    }, index * 500);
                 });
             }
 
