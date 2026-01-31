@@ -447,12 +447,9 @@
             }
 
             finish() {
-                this.stop();
                 audioManager.playFinishSound();
+                this.stop();
                 this.status.textContent = '🎉 時間終了！';
-                // setTimeout(() => {
-                //     alert(`タイマー${this.id} 時間終了！`);
-                // }, 100);
             }
 
             updateButtons() {
