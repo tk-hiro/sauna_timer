@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サウナタイマー</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #7DA3A1;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        .timer-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .timer-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-input {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .input-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 60px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 30px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .pause-btn {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+        }
+
+        .stop-btn {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+
+        .status {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .warning {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .custom-alerts {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .custom-alerts h3 {
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        .alert-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .alert-input input {
+            width: 80px;
+            height: 40px;
+            padding: 5px;
+            text-align: center;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        .alert-input input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .alert-input button {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+        }
+
+        .alert-list {
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            margin: 5px 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .alert-item button {
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>サウナタイマー</h1>
+        
+        <div class="timer-section">
+            <div class="timer-title">INサウナ</div>
+            
+            <div class="time-input" id="timeInput1">
+                <div class="input-group">
+                    <label for="hours1">時</label>
+                    <input type="number" id="hours1" min="0" max="23" value="0" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label for="minutes1">分</label>
+                    <input type="number" id="minutes1" min="0" max="59" value="8" placeholder="8">
+                </div>
+                <div class="input-group">
+                    <label for="seconds1">秒</label>
+                    <input type="number" id="seconds1" min="0" max="59" value="0" placeholder="0">
+                </div>
+            </div>
+
+            <div class="display" id="display1">08:00</div>
+
+            <div class="controls">
+                <button id="startBtn1" class="start-btn">開始</button>
+                <button id="pauseBtn1" class="pause-btn" disabled>一時停止</button>
+                <button id="stopBtn1" class="stop-btn" disabled>停止</button>
+            </div>
+
+            <div class="custom-alerts">
+                <h3>残り時間アラート</h3>
+                <div class="alert-input">
+                    <input type="number" id="alertMinutes" min="0" max="59" placeholder="分" value="3">
+                    <input type="number" id="alertSeconds" min="0" max="59" placeholder="秒" value="0">
+                    <button id="addAlertBtn">追加</button>
+                </div>
+                <div class="alert-list" id="alertList"></div>
+            </div>
+
+            <div class="status" id="status1">時間を設定して開始ボタンを押してください</div>
+        </div>
+
+        <div class="timer-section">
+            <div class="timer-title">休憩</div>
+            
+            <div class="time-input" id="timeInput2">
+                <div class="input-group">
+                    <label for="hours2">時</label>
+                    <input type="number" id="hours2" min="0" max="23" value="0" placeholder="0">
+                </div>
+                <div class="input-group">
+                    <label for="minutes2">分</label>
+                    <input type="number" id="minutes2" min="0" max="59" value="10" placeholder="1">
+                </div>
+                <div class="input-group">
+                    <label for="seconds2">秒</label>
+                    <input type="number" id="seconds2" min="0" max="59" value="0" placeholder="0">
+                </div>
+            </div>
+
+            <div class="display" id="display2">10:00</div>
+
+            <div class="controls">
+                <button id="startBtn2" class="start-btn">開始</button>
+                <button id="pauseBtn2" class="pause-btn" disabled>一時停止</button>
+                <button id="stopBtn2" class="stop-btn" disabled>停止</button>
+            </div>
+
+            <div class="status" id="status2">時間を設定して開始ボタンを押してください</div>
+        </div>
+    </div>
+
+    <script>
+        class Timer {
+            constructor(id) {
+                this.id = id;
+                this.totalSeconds = 0;
+                this.remainingSeconds = 0;
+                this.intervalId = null;
+                this.isRunning = false;
+                this.isPaused = false;
+                this.customAlerts = [];
+                this.triggeredAlerts = new Set();
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.updateDisplay();
+            }
+
+            initializeElements() {
+                this.hoursInput = document.getElementById(`hours${this.id}`);
+                this.minutesInput = document.getElementById(`minutes${this.id}`);
+                this.secondsInput = document.getElementById(`seconds${this.id}`);
+                this.display = document.getElementById(`display${this.id}`);
+                this.startBtn = document.getElementById(`startBtn${this.id}`);
+                this.pauseBtn = document.getElementById(`pauseBtn${this.id}`);
+                this.stopBtn = document.getElementById(`stopBtn${this.id}`);
+                this.status = document.getElementById(`status${this.id}`);
+                this.timeInput = document.getElementById(`timeInput${this.id}`);
+                
+                if (this.id === '1') {
+                    this.alertMinutesInput = document.getElementById('alertMinutes');
+                    this.alertSecondsInput = document.getElementById('alertSeconds');
+                    this.addAlertBtn = document.getElementById('addAlertBtn');
+                    this.alertList = document.getElementById('alertList');
+                }
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.stopBtn.addEventListener('click', () => this.stop());
+
+                [this.hoursInput, this.minutesInput, this.secondsInput].forEach(input => {
+                    input.addEventListener('input', () => this.updateDisplay());
+                });
+
+                if (this.id === '1') {
+                    this.addAlertBtn.addEventListener('click', () => this.addCustomAlert());
+
+                    [this.alertMinutesInput, this.alertSecondsInput].forEach(input => {
+                        input.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') {
+                                this.addCustomAlert();
+                            }
+                        });
+                    });
+                }
+            }
+
+            getInputTime() {
+                const hours = parseInt(this.hoursInput.value) || 0;
+                const minutes = parseInt(this.minutesInput.value) || 0;
+                const seconds = parseInt(this.secondsInput.value) || 0;
+                return hours * 3600 + minutes * 60 + seconds;
+            }
+
+            formatTime(totalSeconds) {
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                if (hours > 0) {
+                    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+
+            updateDisplay() {
+                if (!this.isRunning) {
+                    const inputTime = this.getInputTime();
+                    this.display.textContent = this.formatTime(inputTime);
+                } else {
+                    this.display.textContent = this.formatTime(this.remainingSeconds);
+                }
+            }
+
+            start() {
+                if (!this.isRunning) {
+                    this.totalSeconds = this.getInputTime();
+                    if (this.totalSeconds === 0) {
+                        alert('時間を設定してください');
+                        return;
+                    }
+                    this.remainingSeconds = this.totalSeconds;
+                    this.triggeredAlerts.clear();
+                }
+
+                this.isRunning = true;
+                this.isPaused = false;
+
+                this.intervalId = setInterval(() => {
+                    this.tick();
+                }, 1000);
+
+                this.updateButtons();
+                this.timeInput.style.opacity = '0.5';
+                this.status.textContent = 'タイマー実行中...';
+            }
+
+            pause() {
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+                this.isPaused = true;
+                this.updateButtons();
+                this.status.textContent = '一時停止中';
+            }
+
+            stop() {
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+                
+                this.isRunning = false;
+                this.isPaused = false;
+                this.remainingSeconds = 0;
+                
+                this.updateButtons();
+                this.updateDisplay();
+                this.timeInput.style.opacity = '1';
+                this.status.textContent = '時間を設定して開始ボタンを押してください';
+                this.display.classList.remove('warning');
+            }
+
+            tick() {
+                this.remainingSeconds--;
+
+                if (this.id === '1') {
+                    this.checkCustomAlerts();
+                }
+
+
+                if (this.remainingSeconds <= 0) {
+                    this.finish();
+                    return;
+                }
+
+                this.updateDisplay();
+            }
+
+            finish() {
+                this.stop();
+                audioManager.playFinishSound();
+                this.status.textContent = '🎉 時間終了！';
+                setTimeout(() => {
+                    alert(`タイマー${this.id} 時間終了！`);
+                }, 100);
+            }
+
+            updateButtons() {
+                if (this.isRunning && !this.isPaused) {
+                    this.startBtn.disabled = true;
+                    this.pauseBtn.disabled = false;
+                    this.stopBtn.disabled = false;
+                    this.startBtn.textContent = '開始';
+                } else if (this.isPaused) {
+                    this.startBtn.disabled = false;
+                    this.pauseBtn.disabled = true;
+                    this.stopBtn.disabled = false;
+                    this.startBtn.textContent = '再開';
+                } else {
+                    this.startBtn.disabled = false;
+                    this.pauseBtn.disabled = true;
+                    this.stopBtn.disabled = true;
+                    this.startBtn.textContent = '開始';
+                }
+            }
+
+            addCustomAlert() {
+                const minutes = parseInt(this.alertMinutesInput.value) || 0;
+                const seconds = parseInt(this.alertSecondsInput.value) || 0;
+                const totalSeconds = minutes * 60 + seconds;
+
+                if (totalSeconds <= 0) {
+                    alert('有効な時間を入力してください');
+                    return;
+                }
+
+                if (this.customAlerts.includes(totalSeconds)) {
+                    alert('同じ時間のアラートが既に設定されています');
+                    return;
+                }
+
+                this.customAlerts.push(totalSeconds);
+                this.customAlerts.sort((a, b) => b - a);
+                this.updateAlertList();
+                this.alertMinutesInput.value = '';
+                this.alertSecondsInput.value = '';
+            }
+
+            removeCustomAlert(alertTime) {
+                this.customAlerts = this.customAlerts.filter(time => time !== alertTime);
+                this.updateAlertList();
+            }
+
+            updateAlertList() {
+                this.alertList.innerHTML = '';
+                this.customAlerts.forEach(alertTime => {
+                    const alertItem = document.createElement('div');
+                    alertItem.className = 'alert-item';
+                    
+                    const timeText = this.formatTime(alertTime);
+                    alertItem.innerHTML = `
+                        <span>残り ${timeText} でアラート</span>
+                        <button onclick="timer1.removeCustomAlert(${alertTime})">削除</button>
+                    `;
+                    
+                    this.alertList.appendChild(alertItem);
+                });
+            }
+
+            checkCustomAlerts() {
+                this.customAlerts.forEach(alertTime => {
+                    if (this.remainingSeconds === alertTime && !this.triggeredAlerts.has(alertTime)) {
+                        this.triggeredAlerts.add(alertTime);
+                        audioManager.playCustomAlertSound();
+                        const timeText = this.formatTime(alertTime);
+                        this.status.textContent = `🔔 残り ${timeText} です！`;
+                        
+                        setTimeout(() => {
+                            if (this.remainingSeconds > 10) {
+                                this.status.textContent = 'タイマー実行中...';
+                            }
+                        }, 3000);
+                    }
+                });
+            }
+        }
+
+        class AudioManager {
+            constructor() {
+                this.audioContext = null;
+                this.initAudioContext();
+                this.setupAudioUnlock();
+            }
+
+            async initAudioContext() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (error) {
+                    console.error('Audio Context initialization failed:', error);
+                }
+            }
+
+            setupAudioUnlock() {
+                document.addEventListener('click', () => {
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume();
+                    }
+                }, { once: true });
+            }
+
+            createBeep(frequency, duration, type = 'sine') {
+                if (!this.audioContext) return;
+
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+                
+                oscillator.start(this.audioContext.currentTime);
+                oscillator.stop(this.audioContext.currentTime + duration);
+            }
+
+            playWarningSound() {
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        this.createBeep(800, 0.2);
+                    }, i * 300);
+                }
+            }
+
+            playFinishSound() {
+                const frequencies = [523, 659, 784, 1047];
+                frequencies.forEach((freq, index) => {
+                    setTimeout(() => {
+                        this.createBeep(freq, 0.5);
+                    }, index * 200);
+                });
+            }
+
+            playCustomAlertSound() {
+                for (let i = 0; i < 2; i++) {
+                    setTimeout(() => {
+                        this.createBeep(600, 0.3);
+                    }, i * 400);
+                }
+            }
+        }
+
+        let timer1, timer2, audioManager;
+        document.addEventListener('DOMContentLoaded', () => {
+            audioManager = new AudioManager();
+            timer1 = new Timer('1');
+            timer2 = new Timer('2');
+        });
+    </script>
+</body>
+</html>
